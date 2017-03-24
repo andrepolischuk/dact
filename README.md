@@ -5,7 +5,7 @@
 ## Install
 
 ```sh
-npm install --save-dev recd
+npm install --save recd
 ```
 
 ## Usage
