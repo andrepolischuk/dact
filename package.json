@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "description": "Simple data transformations",
   "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "test": "xo && ava",
     "prepublish": "babel index.js --out-dir dist",
