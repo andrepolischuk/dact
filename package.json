@@ -1,7 +1,7 @@
 {
   "name": "recd",
   "version": "0.1.1",
-  "description": "Simple data transformations",
+  "description": "Simple data container",
   "main": "dist/index.js",
   "files": [
     "dist"
@@ -19,7 +19,7 @@
     "simple",
     "data",
     "state",
-    "manager"
+    "container"
   ],
   "author": "Andrey Polischuk <me@andrepolischuk.com> (https://andrepolischuk.com)",
   "license": "MIT",

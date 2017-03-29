@@ -64,7 +64,7 @@ test('async transform', async t => {
 
   t.is(typeof getProfile, 'function')
   await getProfile(0, 'Bar')
-  t.deepEqual(profile(), {loading: false, id: 0, name: 'Foo', meta: 'Bar'})
+  t.deepEqual(profile.pull(), {loading: false, id: 0, name: 'Foo', meta: 'Bar'})
 })
 
 test('wrong transform', t => {

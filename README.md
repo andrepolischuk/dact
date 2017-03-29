@@ -1,6 +1,6 @@
 # recd [![Build Status][travis-image]][travis-url]
 
-> Simple data transformations
+> Simple data container
 
 ## Install
 
@@ -14,7 +14,7 @@ npm install --save recd
 import createData from 'recd'
 
 const profile = createData({})
-const setName = profile.transform((data, name) => data({name}))
+const setName = profile.transform(name => ({name}))
 
 profile.subscribe(data => console.log(data))
 
@@ -32,15 +32,17 @@ Create and return `data` instance with `initial`.
 
 Type: `object`
 
-### data.pull([next])
+### data.pull()
 
 Pull current data.
+
+### data.push(next)
+
+Merge current data snapshot with `next` and replace.
 
 #### next
 
 Type: `object`
-
-Method merge current data snapshot with `next` if specified and return.
 
 ### data.subscribe(listener)
 
@@ -60,26 +62,26 @@ Updated data snapshot.
 
 Create data transform function.
 
-#### fn(pull[, ...args])
+#### fn([...args, ]data)
 
 Type: `function`
 
-##### pull
+##### data
 
 Type: `function`
 
-Link for `data.pull` method.
+Link for `data`.
 
 Sync transform:
 
 ```js
-const setLoading = profile.transform((data, loading) => data({loading}))
+const setLoading = profile.transform(loading => ({loading}))
 ```
 
 Async transform:
 
 ```js
-const getProfile = profile.transform(async (data, id) => {
+const getProfile = profile.transform(async (id, data) => {
   if (data().loading) {
     return 
   }
@@ -87,20 +89,20 @@ const getProfile = profile.transform(async (data, id) => {
   setLoading(true)
   const info = await request(id)
 
-  return data({ 
+  return {
     ...info, 
     loading: false 
-  })
+  }
 })
 ```
 
-### data([next])
+### data()
 
-Alias for `data.pull([next])`.
+Alias for `data.pull()`.
 
-### data(fn)
+### data(next)
 
-Alias for `data.transform(fn)`.
+Alias for `data.push(next)`.
 
 ## License
 
