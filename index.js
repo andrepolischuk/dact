@@ -1,8 +1,8 @@
-export default function createData(initial) {
+export default function createData (initial) {
   const listeners = []
   let state = initial
 
-  function pull(next) {
+  function pull (next) {
     if (next) {
       return {
         ...state,
@@ -13,7 +13,7 @@ export default function createData(initial) {
     return state
   }
 
-  function push(next) {
+  function push (next) {
     if (!next) {
       return
     }
@@ -27,7 +27,7 @@ export default function createData(initial) {
     return next
   }
 
-  function subscribe(listener) {
+  function subscribe (listener) {
     if (typeof listener !== 'function') {
       throw new TypeError('Expected `listener` to be a function')
     }
@@ -35,7 +35,7 @@ export default function createData(initial) {
     listeners.push(listener)
   }
 
-  function transform(fn) {
+  function transform (fn) {
     if (typeof fn !== 'function') {
       throw new TypeError('Expected transform `fn` to be a function')
     }
@@ -51,7 +51,7 @@ export default function createData(initial) {
     }
   }
 
-  function data(next) {
+  function data (next) {
     if (typeof next === 'function') {
       return transform(next)
     }
