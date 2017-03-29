@@ -9,9 +9,9 @@ const request = id => new Promise(resolve => {
 
 const createProfile = () => {
   const profile = createData({loading: false})
-  const setLoading = profile.transform((data, loading) => data({loading}))
+  const setLoading = profile.transform(loading => ({loading}))
 
-  const getProfile = profile.transform(async (data, id, meta) => {
+  const getProfile = profile.transform(async (id, meta, data) => {
     if (data().loading) {
       return
     }
@@ -19,11 +19,11 @@ const createProfile = () => {
     setLoading(true)
     const info = await request(id)
 
-    return data({
+    return {
       ...info,
       meta,
       loading: false
-    })
+    }
   })
 
   return {
@@ -37,9 +37,18 @@ test('initial', t => {
   const {profile} = createProfile()
 
   t.is(typeof profile.pull, 'function')
+  t.is(typeof profile.push, 'function')
   t.is(typeof profile.subscribe, 'function')
   t.is(typeof profile.transform, 'function')
   t.deepEqual(profile.pull(), {loading: false})
+})
+
+test('push', t => {
+  const {profile} = createProfile()
+
+  t.deepEqual(profile.pull(), {loading: false})
+  profile.push({loading: true})
+  t.deepEqual(profile.pull(), {loading: true})
 })
 
 test('transform', t => {
@@ -91,9 +100,12 @@ test.cb('async listener', t => {
 
   const {profile} = createProfile()
 
-  const setProfile = profile.transform(async (data, id) => {
+  const setProfile = profile.transform(async id => {
     await request()
-    return data({id})
+
+    return {
+      id
+    }
   })
 
   profile.subscribe(data => {
