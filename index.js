@@ -8,7 +8,7 @@ export default function createData (initial) {
 
   function push (next) {
     if (!next) {
-      return
+      return state
     }
 
     state = {
