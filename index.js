@@ -2,29 +2,29 @@ export default function createData (initial) {
   const listeners = []
   let state = initial
 
-  function pull (next) {
-    if (next) {
-      return {
-        ...state,
-        ...next
-      }
-    }
-
+  function pull () {
     return state
   }
 
   function push (next) {
     if (!next) {
-      return
+      return state
     }
 
-    state = next
+    if (typeof next !== 'object') {
+      throw new TypeError('Expected `next` data to be an object')
+    }
+
+    state = {
+      ...state,
+      ...next
+    }
 
     for (let i = 0; i < listeners.length; i++) {
-      listeners[i](next)
+      listeners[i](state)
     }
 
-    return next
+    return state
   }
 
   function subscribe (listener) {
@@ -41,7 +41,7 @@ export default function createData (initial) {
     }
 
     return (...args) => {
-      const next = fn(pull, ...args)
+      const next = fn(...args, pull)
 
       if (next && typeof next.then === 'function') {
         return next.then(push)
@@ -52,14 +52,15 @@ export default function createData (initial) {
   }
 
   function data (next) {
-    if (typeof next === 'function') {
-      return transform(next)
+    if (next) {
+      return push(next)
     }
 
-    return pull(next)
+    return pull()
   }
 
   data.pull = pull
+  data.push = push
   data.subscribe = subscribe
   data.transform = transform
 
