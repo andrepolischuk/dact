@@ -83,15 +83,15 @@ Async transform:
 ```js
 const getProfile = profile.transform(async (id, pull) => {
   if (pull().loading) {
-    return 
+    return
   }
 
   setLoading(true)
   const info = await request(id)
 
   return {
-    ...info, 
-    loading: false 
+    ...info,
+    loading: false
   }
 })
 ```
