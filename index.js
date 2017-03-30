@@ -11,6 +11,10 @@ export default function createData (initial) {
       return state
     }
 
+    if (typeof next !== 'object') {
+      throw new TypeError('Expected `next` data to be an object')
+    }
+
     state = {
       ...state,
       ...next

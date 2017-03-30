@@ -51,6 +51,30 @@ test('push', t => {
   t.deepEqual(profile.pull(), {loading: true})
 })
 
+test('empty push', t => {
+  const {profile} = createProfile()
+
+  t.deepEqual(profile.pull(), {loading: false})
+  profile.push()
+  profile.push(null)
+  t.deepEqual(profile.pull(), {loading: false})
+})
+
+test('wrong push', t => {
+  const {profile} = createProfile()
+
+  const stringError = t.throws(() => {
+    profile.push('foo')
+  }, TypeError)
+
+  const functionError = t.throws(() => {
+    profile.push(() => {})
+  }, TypeError)
+
+  t.is(stringError.message, 'Expected `next` data to be an object')
+  t.is(functionError.message, 'Expected `next` data to be an object')
+})
+
 test('transform', t => {
   const {profile, setLoading} = createProfile()
 
