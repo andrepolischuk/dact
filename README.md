@@ -2,6 +2,11 @@
 
 > Simple data container
 
+Data manipulations should be simple. Simple flow based on trasformation functions makes possible
+to create applications without writing mass of boilerplate code.
+
+It's my try to create minimal data container. Small size ~2kb, no dependencies, simple api.
+
 ## Install
 
 ```sh
