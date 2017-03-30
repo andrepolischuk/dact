@@ -62,15 +62,15 @@ Updated data snapshot.
 
 Create data transform function.
 
-#### fn([...args, ]data)
+#### fn([...args, ]pull)
 
 Type: `function`
 
-##### data
+##### pull
 
 Type: `function`
 
-Link for `data`.
+Link for `data.pull` method.
 
 Sync transform:
 
@@ -81,8 +81,8 @@ const setLoading = profile.transform(loading => ({loading}))
 Async transform:
 
 ```js
-const getProfile = profile.transform(async (id, data) => {
-  if (data().loading) {
+const getProfile = profile.transform(async (id, pull) => {
+  if (pull().loading) {
     return 
   }
 

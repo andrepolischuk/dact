@@ -11,8 +11,8 @@ const createProfile = () => {
   const profile = createData({loading: false})
   const setLoading = profile.transform(loading => ({loading}))
 
-  const getProfile = profile.transform(async (id, meta, data) => {
-    if (data().loading) {
+  const getProfile = profile.transform(async (id, meta, pull) => {
+    if (pull().loading) {
       return
     }
 

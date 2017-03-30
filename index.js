@@ -37,7 +37,7 @@ export default function createData (initial) {
     }
 
     return (...args) => {
-      const next = fn(...args, data)
+      const next = fn(...args, pull)
 
       if (next && typeof next.then === 'function') {
         return next.then(push)
