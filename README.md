@@ -1,17 +1,17 @@
-# recd [![Build Status][travis-image]][travis-url]
+# dact [![Build Status][travis-image]][travis-url]
 
 > Simple data container
 
 ## Install
 
 ```sh
-npm install --save recd
+npm install --save dact
 ```
 
 ## Usage
 
 ```js
-import createData from 'recd'
+import createData from 'dact'
 
 const profile = createData({})
 const setName = profile.transform(name => ({name}))
@@ -108,5 +108,5 @@ Alias for `data.push(next)`.
 
 MIT
 
-[travis-url]: https://travis-ci.org/andrepolischuk/recd
-[travis-image]: https://travis-ci.org/andrepolischuk/recd.svg?branch=master
+[travis-url]: https://travis-ci.org/andrepolischuk/dact
+[travis-image]: https://travis-ci.org/andrepolischuk/dact.svg?branch=master
