@@ -2,17 +2,13 @@ export default function createData (initial) {
   const listeners = []
   let state = initial
 
-  function pull () {
-    return state
-  }
-
-  function push (next) {
-    if (!next) {
-      return state
+  function emit (next, ...args) {
+    if (typeof next === 'function') {
+      return emit(next(...args, state))
     }
 
-    if (typeof next !== 'object') {
-      throw new TypeError('Expected `next` data to be an object')
+    if (!next || typeof next !== 'object') {
+      throw new TypeError('Expected `next` state to be an object')
     }
 
     state = {
@@ -35,34 +31,16 @@ export default function createData (initial) {
     listeners.push(listener)
   }
 
-  function transform (fn) {
-    if (typeof fn !== 'function') {
-      throw new TypeError('Expected transform `fn` to be a function')
-    }
-
-    return (...args) => {
-      const next = fn(...args, pull)
-
-      if (next && typeof next.then === 'function') {
-        return next.then(push)
-      }
-
-      return push(next)
+  const data = {
+    emit,
+    subscribe,
+    get state () {
+      return state
+    },
+    set state (next) {
+      throw new Error('Expected update `state` by `emit` instead of mutate directly')
     }
   }
-
-  function data (next) {
-    if (next) {
-      return push(next)
-    }
-
-    return pull()
-  }
-
-  data.pull = pull
-  data.push = push
-  data.subscribe = subscribe
-  data.transform = transform
 
   return data
 }

@@ -7,143 +7,132 @@ const request = id => new Promise(resolve => {
   }, 10)
 })
 
-const createProfile = () => {
-  const profile = createData({loading: false})
-  const setLoading = profile.transform(loading => ({loading}))
+const initial = {
+  loading: false
+}
 
-  const getProfile = profile.transform(async (id, meta, pull) => {
-    if (pull().loading) {
-      return
-    }
-
-    setLoading(true)
-    const info = await request(id)
-
-    return {
-      ...info,
-      meta,
-      loading: false
-    }
-  })
-
+function setLoading (loading) {
   return {
-    profile,
-    setLoading,
-    getProfile
+    loading
+  }
+}
+
+function saveProfile (info, meta, state) {
+  return {
+    ...info,
+    meta,
+    notLoading: !state.loading
   }
 }
 
 test('initial', t => {
-  const {profile} = createProfile()
+  const profile = createData(initial)
 
-  t.is(typeof profile.pull, 'function')
-  t.is(typeof profile.push, 'function')
+  t.is(typeof profile.state, 'object')
+  t.is(typeof profile.emit, 'function')
   t.is(typeof profile.subscribe, 'function')
-  t.is(typeof profile.transform, 'function')
-  t.deepEqual(profile.pull(), {loading: false})
+  t.deepEqual(profile.state, {loading: false})
 })
 
-test('push', t => {
-  const {profile} = createProfile()
+test('mutate directly', t => {
+  const profile = createData(initial)
 
-  t.deepEqual(profile.pull(), {loading: false})
-  profile.push({loading: true})
-  t.deepEqual(profile.pull(), {loading: true})
+  const error = t.throws(() => {
+    profile.state = {
+      loading: true
+    }
+  }, Error)
+
+  t.is(error.message, 'Expected update `state` by `emit` instead of mutate directly')
 })
 
-test('empty push', t => {
-  const {profile} = createProfile()
+test('simple emit', t => {
+  const profile = createData(initial)
 
-  t.deepEqual(profile.pull(), {loading: false})
-  profile.push()
-  profile.push(null)
-  t.deepEqual(profile.pull(), {loading: false})
+  t.deepEqual(profile.state, {loading: false})
+  profile.emit({loading: true})
+  t.deepEqual(profile.state, {loading: true})
 })
 
-test('wrong push', t => {
-  const {profile} = createProfile()
+test('emit function', async t => {
+  const profile = createData(initial)
+
+  profile.emit(setLoading, true)
+  t.deepEqual(profile.state, {loading: true})
+
+  const info = await request(1)
+
+  profile.emit(setLoading, false)
+  t.deepEqual(profile.state, {loading: false})
+  profile.emit(saveProfile, info, 'Bar')
+
+  t.deepEqual(profile.state, {
+    id: 1,
+    name: 'Foo',
+    meta: 'Bar',
+    loading: false,
+    notLoading: true
+  })
+})
+
+test('wrong emit', t => {
+  const profile = createData(initial)
+
+  const undefError = t.throws(() => {
+    profile.emit()
+  }, TypeError)
+
+  const nullError = t.throws(() => {
+    profile.emit(null)
+  }, TypeError)
 
   const stringError = t.throws(() => {
-    profile.push('foo')
+    profile.emit('foo')
   }, TypeError)
 
-  const functionError = t.throws(() => {
-    profile.push(() => {})
-  }, TypeError)
-
-  t.is(stringError.message, 'Expected `next` data to be an object')
-  t.is(functionError.message, 'Expected `next` data to be an object')
-})
-
-test('transform', t => {
-  const {profile, setLoading} = createProfile()
-
-  t.is(typeof setLoading, 'function')
-  setLoading(true)
-  t.deepEqual(profile.pull(), {loading: true})
-})
-
-test('async transform', async t => {
-  const {profile, getProfile} = createProfile()
-
-  t.is(typeof getProfile, 'function')
-  await getProfile(0, 'Bar')
-  t.deepEqual(profile.pull(), {loading: false, id: 0, name: 'Foo', meta: 'Bar'})
-})
-
-test('wrong transform', t => {
-  const {profile} = createProfile()
-
-  const undefinedError = t.throws(() => {
-    profile.transform()
-  }, TypeError)
-
-  const objectError = t.throws(() => {
-    profile.transform({})
-  }, TypeError)
-
-  t.is(undefinedError.message, 'Expected transform `fn` to be a function')
-  t.is(objectError.message, 'Expected transform `fn` to be a function')
+  t.is(undefError.message, 'Expected `next` state to be an object')
+  t.is(nullError.message, 'Expected `next` state to be an object')
+  t.is(stringError.message, 'Expected `next` state to be an object')
 })
 
 test.cb('listener', t => {
   t.plan(1)
 
-  const {profile, setLoading} = createProfile()
+  const profile = createData(initial)
 
-  profile.subscribe(data => {
-    t.deepEqual(data, {loading: true})
+  profile.subscribe(() => {
+    t.deepEqual(profile.state, {loading: true})
     t.end()
   })
 
-  setLoading(true)
+  profile.emit(setLoading, true)
 })
 
 test.cb('async listener', t => {
   t.plan(1)
 
-  const {profile} = createProfile()
+  const profile = createData(initial)
 
-  const setProfile = profile.transform(async id => {
+  async function setProfile (id) {
     await request()
 
-    return {
+    profile.emit({
       id
-    }
-  })
+    })
+  }
 
-  profile.subscribe(data => {
-    t.deepEqual(data, {loading: false, id: 0})
+  profile.subscribe(() => {
+    t.deepEqual(profile.state, {loading: false, id: 0})
     t.end()
   })
 
-  setProfile(0, 'Foo')
+  setProfile(0)
 })
 
 test('wrong listener', t => {
-  const {profile} = createProfile()
+  const profile = createData(initial)
 
-  const undefinedError = t.throws(() => {
+  const undefError = t.throws(() => {
     profile.subscribe()
   }, TypeError)
 
@@ -151,6 +140,6 @@ test('wrong listener', t => {
     profile.subscribe({})
   }, TypeError)
 
-  t.is(undefinedError.message, 'Expected `listener` to be a function')
+  t.is(undefError.message, 'Expected `listener` to be a function')
   t.is(objectError.message, 'Expected `listener` to be a function')
 })
