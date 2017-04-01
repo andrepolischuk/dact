@@ -19,12 +19,19 @@ npm install --save dact
 import createData from 'dact'
 
 const profile = createData({})
-const setName = profile.transform(name => ({name}))
 
-profile.subscribe(data => console.log(data))
+profile.subscribe(() => {
+  console.log(profile.state)
+})
 
-setName('unicorn')
-profile.pull() // {name: 'unicorn'}
+function setName (name) {
+  return {
+    name
+  }
+}
+
+profile.emit(setName, 'unicorn')
+profile.state // {name: 'unicorn'}
 ```
 
 ## API
@@ -37,77 +44,35 @@ Create and return `data` instance with `initial`.
 
 Type: `object`
 
-### data.pull()
+### data.state
 
-Pull current data.
+Pull latest state.
 
-### data.push(next)
+### data.emit(next)
 
-Merge current data snapshot with `next` and replace.
+Merge latest state with `next` or transform and replace.
 
 #### next
 
 Type: `object`
 
-### data.subscribe(listener)
-
-Add listener invoke after data is changed.
-
-#### listener(next)
+#### next([...args], state)
 
 Type: `function`
 
-##### next
+### data.subscribe(listener)
+
+Add listener invoke after state is changed.
+
+#### listener(state)
+
+Type: `function`
+
+##### state
 
 Type: `object`
 
-Updated data snapshot.
-
-### data.transform(fn)
-
-Create data transform function.
-
-#### fn([...args, ]pull)
-
-Type: `function`
-
-##### pull
-
-Type: `function`
-
-Link for `data.pull` method.
-
-Sync transform:
-
-```js
-const setLoading = profile.transform(loading => ({loading}))
-```
-
-Async transform:
-
-```js
-const getProfile = profile.transform(async (id, pull) => {
-  if (pull().loading) {
-    return
-  }
-
-  setLoading(true)
-  const info = await request(id)
-
-  return {
-    ...info,
-    loading: false
-  }
-})
-```
-
-### data()
-
-Alias for `data.pull()`.
-
-### data(next)
-
-Alias for `data.push(next)`.
+Latest state.
 
 ## License
 
