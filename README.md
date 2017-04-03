@@ -18,10 +18,10 @@ npm install --save dact
 ```js
 import createData from 'dact'
 
-const profile = createData({})
+const data = createData({})
 
-profile.subscribe(() => {
-  console.log(profile.state)
+data.subscribe(state => {
+  console.log(state)
 })
 
 function setName (name) {
@@ -30,8 +30,8 @@ function setName (name) {
   }
 }
 
-profile.emit(setName, 'unicorn')
-profile.state // {name: 'unicorn'}
+data.emit(setName, 'unicorn')
+data.state // {name: 'unicorn'}
 ```
 
 ## API
@@ -56,9 +56,36 @@ Merge latest state with `next` or transform and replace.
 
 Type: `object`
 
+```js
+const data = createData({loading: false})
+
+data.emit({loading: true})
+data.state // {loading: true}
+```
+
 #### next([...args], state)
 
 Type: `function`
+
+```js
+const data = createData({
+  users: [
+    'pony',
+    'unicorn'
+  ]
+})
+
+function deleteUser (name, state) {
+  const users = state.users.filter(user => user !== name)
+
+  return {
+    users
+  }
+}
+
+data.emit(deleteUser, 'pony')
+data.state // { users: ['unicorn'] }
+```
 
 ### data.subscribe(listener)
 
