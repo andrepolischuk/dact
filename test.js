@@ -75,23 +75,29 @@ test('emit function', async t => {
   })
 })
 
+test('emit without transform', t => {
+  const profile = createData(initial)
+
+  profile.emit()
+  t.deepEqual(profile.state, {loading: false})
+  profile.emit(initial)
+  t.deepEqual(profile.state, {loading: false})
+  profile.emit(state => state)
+  t.deepEqual(profile.state, {loading: false})
+})
+
 test('wrong emit', t => {
   const profile = createData(initial)
 
-  const undefError = t.throws(() => {
-    profile.emit()
-  }, TypeError)
-
-  const nullError = t.throws(() => {
-    profile.emit(null)
+  const numberError = t.throws(() => {
+    profile.emit(2)
   }, TypeError)
 
   const stringError = t.throws(() => {
     profile.emit('foo')
   }, TypeError)
 
-  t.is(undefError.message, 'Expected `next` state to be an object')
-  t.is(nullError.message, 'Expected `next` state to be an object')
+  t.is(numberError.message, 'Expected `next` state to be an object')
   t.is(stringError.message, 'Expected `next` state to be an object')
 })
 

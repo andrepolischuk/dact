@@ -7,7 +7,11 @@ export default function createData (initial) {
       return emit(next(...args, state))
     }
 
-    if (!next || typeof next !== 'object') {
+    if (!next || state === next) {
+      return state
+    }
+
+    if (typeof next !== 'object') {
       throw new TypeError('Expected `next` state to be an object')
     }
 
