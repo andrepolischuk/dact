@@ -8,7 +8,7 @@ export default function createData (initial) {
     }
 
     if (!next || state === next) {
-      return state
+      return next
     }
 
     if (typeof next !== 'object') {
@@ -24,7 +24,7 @@ export default function createData (initial) {
       listeners[i](state)
     }
 
-    return state
+    return next
   }
 
   function subscribe (listener) {
