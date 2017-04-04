@@ -78,8 +78,6 @@ test('emit function', async t => {
 test('emit without transform', t => {
   const profile = createData(initial)
 
-  profile.emit()
-  t.deepEqual(profile.state, {loading: false})
   profile.emit(initial)
   t.deepEqual(profile.state, {loading: false})
   profile.emit(state => state)
@@ -97,8 +95,8 @@ test('wrong emit', t => {
     profile.emit('foo')
   }, TypeError)
 
-  t.is(numberError.message, 'Expected `next` state to be an object')
-  t.is(stringError.message, 'Expected `next` state to be an object')
+  t.is(numberError.message, 'Expected emitted `next` to be an object or function')
+  t.is(stringError.message, 'Expected emitted `next` to be an object or function')
 })
 
 test.cb('listener', t => {

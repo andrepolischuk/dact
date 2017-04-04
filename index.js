@@ -2,11 +2,7 @@ export default function createData (initial) {
   const listeners = []
   let state = initial
 
-  function emit (next, ...args) {
-    if (typeof next === 'function') {
-      return emit(next(...args, state))
-    }
-
+  function merge (next) {
     if (!next || state === next) {
       return next
     }
@@ -23,8 +19,18 @@ export default function createData (initial) {
     for (let i = 0; i < listeners.length; i++) {
       listeners[i](state)
     }
+  }
 
-    return next
+  function emit (next, ...args) {
+    if (typeof next !== 'function' && typeof next !== 'object') {
+      throw new TypeError('Expected emitted `next` to be an object or function')
+    }
+
+    if (typeof next === 'object') {
+      return merge(next)
+    }
+
+    return merge(next(...args, state))
   }
 
   function subscribe (listener) {
