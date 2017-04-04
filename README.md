@@ -2,10 +2,10 @@
 
 > Simple data container
 
-Data manipulations should be simple. Simple flow based on trasformation functions makes possible
+Data manipulations should be simple. Simple flow based on functions extend state makes possible
 to create applications without writing mass of boilerplate code.
 
-It's my try to create minimal data container. Small size ~2kb, no dependencies, simple api.
+It's my try to create minimal data container. Small size `~1kb`, extendable, simple api.
 
 ## Install
 
@@ -18,96 +18,148 @@ npm install --save dact
 ```js
 import createData from 'dact'
 
-const profile = createData({})
-const setName = profile.transform(name => ({name}))
+const data = createData({
+  users: []
+})
 
-profile.subscribe(data => console.log(data))
+function sortUsers (data) {
+  const users = data.state.users.sort()
 
-setName('unicorn')
-profile.pull() // {name: 'unicorn'}
+  return {
+    users
+  }
+}
+
+async function addUser (name, data) {
+  const user = await request(name)
+  const users = data.state.users.filter(user => user !== name)
+
+  return {
+    users: [
+      ...users,
+      user.name
+    ]
+  }
+}
+
+data.subscribe(() => {
+  console.log(data.state)
+  // {users: ['unicorn']}
+  // {users: ['unicorn', 'pony']}
+  // {users: ['pony', 'unicorn']}
+})
+
+async function init () {
+  await data.emit(addUser, 'unicorn')
+  await data.emit(addUser, 'pony')
+  data.emit(sortUsers)
+}
+
+init()
 ```
+
+See also [example application](https://github.com/andrepolischuk/dact-example).
 
 ## API
 
-### createData(initial)
+### createData(initial[, ...middlewares])
 
-Create and return `data` instance with `initial`.
+Create and return `data` instance with `initial` state.
 
 #### initial
 
 Type: `object`
 
-### data.pull()
+#### middlewares
 
-Pull current data.
+Type: `...function`
 
-### data.push(next)
+Logging middleware for example:
 
-Merge current data snapshot with `next` and replace.
+```js
+function logger (data) {
+  return next => extend => {
+    console.log(extend)
 
-#### next
+    return next(extend)
+  }
+}
+```
 
-Type: `object`
+##### data
 
-### data.subscribe(listener)
-
-Add listener invoke after data is changed.
-
-#### listener(next)
-
-Type: `function`
+Link to `data` instance.
 
 ##### next
 
+Next chain function.
+
+##### extend
+
+Data for merge with current state.
+
+### data.state
+
+Pull current state.
+
+### data.emit(extend)
+
+Merge current state with `extend` or transform and replace.
+
+#### extend
+
 Type: `object`
 
-Updated data snapshot.
-
-### data.transform(fn)
-
-Create data transform function.
-
-#### fn([...args, ]pull)
-
-Type: `function`
-
-##### pull
-
-Type: `function`
-
-Link for `data.pull` method.
-
-Sync transform:
-
 ```js
-const setLoading = profile.transform(loading => ({loading}))
+const data = createData({loading: false})
+
+data.emit({loading: true})
+data.state // {loading: true}
 ```
 
-Async transform:
+#### extend([...args], data)
+
+Type: `function`
 
 ```js
-const getProfile = profile.transform(async (id, pull) => {
-  if (pull().loading) {
-    return
-  }
+const data = createData({
+  users: [
+    'pony',
+    'unicorn'
+  ]
+})
 
-  setLoading(true)
-  const info = await request(id)
+function deleteUser (name, data) {
+  const users = data.state.users.filter(user => user !== name)
 
   return {
-    ...info,
-    loading: false
+    users
   }
-})
+}
+
+data.emit(deleteUser, 'pony')
+data.state // { users: ['unicorn'] }
 ```
 
-### data()
+### data.subscribe([stateKey, ]listener)
 
-Alias for `data.pull()`.
+Add listener invoke after state is changed.
 
-### data(next)
+#### stateKey
 
-Alias for `data.push(next)`.
+Type: `string`
+
+Allow subscribe to first level sub-state.
+
+#### listener(state)
+
+Type: `function`
+
+##### state
+
+Type: `object`
+
+Current root state.
 
 ## License
 
