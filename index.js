@@ -1,5 +1,5 @@
 export default function createData (initial, ...middlewares) {
-  const listeners = []
+  const listeners = {}
   let state = initial
 
   const data = {
@@ -27,6 +27,16 @@ export default function createData (initial, ...middlewares) {
     return fns.reduce((a, b) => (...args) => a(b(...args)))
   }
 
+  function notify (stateKey, state) {
+    const nested = listeners[stateKey]
+
+    if (nested) {
+      for (let i = 0; i < nested.length; i++) {
+        nested[i](state)
+      }
+    }
+  }
+
   function merge (extend) {
     if (!extend || state === extend) {
       return extend
@@ -41,9 +51,13 @@ export default function createData (initial, ...middlewares) {
       ...extend
     }
 
-    for (let i = 0; i < listeners.length; i++) {
-      listeners[i](state)
+    for (let extendKey in extend) {
+      if (extend.hasOwnProperty(extendKey)) {
+        notify(extendKey, state)
+      }
     }
+
+    notify('*', state)
   }
 
   function emit (extend, ...args) {
@@ -65,12 +79,21 @@ export default function createData (initial, ...middlewares) {
     return transform(result, meta)
   }
 
-  function subscribe (listener) {
+  function subscribe (stateKey, listener) {
+    if (typeof stateKey === 'function') {
+      listener = stateKey
+      stateKey = '*'
+    }
+
     if (typeof listener !== 'function') {
       throw new TypeError('Expected listener to be a function')
     }
 
-    listeners.push(listener)
+    if (!listeners[stateKey]) {
+      listeners[stateKey] = []
+    }
+
+    listeners[stateKey].push(listener)
   }
 
   return data

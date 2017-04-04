@@ -130,6 +130,23 @@ test.cb('async listener', t => {
   profile.emit(getProfile, 0)
 })
 
+test.cb('nested listener', t => {
+  t.plan(1)
+
+  const profile = createData({
+    app: null,
+    user: null
+  })
+
+  profile.subscribe('user', () => {
+    t.deepEqual(profile.state, {app: 'Foo', user: 'Bar'})
+    t.end()
+  })
+
+  profile.emit({app: 'Foo'})
+  profile.emit({user: 'Bar'})
+})
+
 test('wrong listener', t => {
   const profile = createData(initial)
 

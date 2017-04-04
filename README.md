@@ -139,9 +139,15 @@ data.emit(deleteUser, 'pony')
 data.state // { users: ['unicorn'] }
 ```
 
-### data.subscribe(listener)
+### data.subscribe([stateKey, ]listener)
 
 Add listener invoke after state is changed.
+
+#### stateKey
+
+Type: `string`
+
+Allow subscribe to first level sub-state.
 
 #### listener(state)
 
@@ -151,7 +157,7 @@ Type: `function`
 
 Type: `object`
 
-Current state.
+Current root state.
 
 ## License
 
