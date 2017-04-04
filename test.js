@@ -43,7 +43,7 @@ test('mutate directly', t => {
     }
   }, Error)
 
-  t.is(error.message, 'Expected update `state` by `emit` instead of mutate directly')
+  t.is(error.message, 'Expected extend state by emit instead of mutate directly')
 })
 
 test('simple emit', t => {
@@ -95,8 +95,8 @@ test('wrong emit', t => {
     profile.emit('foo')
   }, TypeError)
 
-  t.is(numberError.message, 'Expected emitted `next` to be an object or function')
-  t.is(stringError.message, 'Expected emitted `next` to be an object or function')
+  t.is(numberError.message, 'Expected emitted value to be an object or function')
+  t.is(stringError.message, 'Expected emitted value to be an object or function')
 })
 
 test.cb('listener', t => {
@@ -144,6 +144,21 @@ test('wrong listener', t => {
     profile.subscribe({})
   }, TypeError)
 
-  t.is(undefError.message, 'Expected `listener` to be a function')
-  t.is(objectError.message, 'Expected `listener` to be a function')
+  t.is(undefError.message, 'Expected listener to be a function')
+  t.is(objectError.message, 'Expected listener to be a function')
+})
+
+test('middlewares', t => {
+  const middleware = data => next => (nextState, meta) => {
+    return next({
+      ...nextState,
+      last: meta
+    })
+  }
+
+  const profile = createData(initial, middleware)
+
+  t.deepEqual(profile.state, {loading: false})
+  profile.emit(setLoading, true)
+  t.deepEqual(profile.state, {loading: true, last: 'setLoading'})
 })
