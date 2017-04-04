@@ -13,7 +13,7 @@ export default function createData (initial, ...middlewares) {
     }
   }
 
-  const transform = pipe(...middlewares.map(m => m(data)))
+  const transform = pipe(...middlewares.map(mw => mw(data)))(merge)
 
   function pipe (...fns) {
     if (fns.length === 0) {
@@ -52,10 +52,17 @@ export default function createData (initial, ...middlewares) {
     }
 
     if (typeof extend === 'object') {
-      return transform(merge)(extend)
+      return transform(extend)
     }
 
-    return transform(merge)(extend(...args, state), extend && extend.name)
+    const meta = extend && extend.name
+    const result = extend(...args, data)
+
+    if (result && typeof result.then === 'function') {
+      return result.then(res => transform(res, meta))
+    }
+
+    return transform(result, meta)
   }
 
   function subscribe (listener) {

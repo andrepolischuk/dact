@@ -17,12 +17,17 @@ function setLoading (loading) {
   }
 }
 
-function saveProfile (info, meta, state) {
-  return {
-    ...info,
-    meta,
-    notLoading: !state.loading
-  }
+async function getProfile (id, data) {
+  data.emit({
+    loading: true
+  })
+
+  const user = await request(id)
+
+  data.emit({
+    ...user,
+    loading: false
+  })
 }
 
 test('initial', t => {
@@ -54,25 +59,20 @@ test('simple emit', t => {
   t.deepEqual(profile.state, {loading: true})
 })
 
-test('emit function', async t => {
+test('emit function', t => {
   const profile = createData(initial)
 
+  t.deepEqual(profile.state, {loading: false})
   profile.emit(setLoading, true)
   t.deepEqual(profile.state, {loading: true})
+})
 
-  const info = await request(1)
+test('emit async function', async t => {
+  const profile = createData(initial)
 
-  profile.emit(setLoading, false)
   t.deepEqual(profile.state, {loading: false})
-  profile.emit(saveProfile, info, 'Bar')
-
-  t.deepEqual(profile.state, {
-    id: 1,
-    name: 'Foo',
-    meta: 'Bar',
-    loading: false,
-    notLoading: true
-  })
+  await profile.emit(getProfile, 0)
+  t.deepEqual(profile.state, {loading: false, id: 0, name: 'Foo'})
 })
 
 test('emit without transform', t => {
@@ -80,7 +80,7 @@ test('emit without transform', t => {
 
   profile.emit(initial)
   t.deepEqual(profile.state, {loading: false})
-  profile.emit(state => state)
+  profile.emit(data => data.state)
   t.deepEqual(profile.state, {loading: false})
 })
 
@@ -113,24 +113,21 @@ test.cb('listener', t => {
 })
 
 test.cb('async listener', t => {
-  t.plan(1)
+  t.plan(2)
 
   const profile = createData(initial)
-
-  async function setProfile (id) {
-    await request()
-
-    profile.emit({
-      id
-    })
-  }
+  let i = 0
 
   profile.subscribe(() => {
-    t.deepEqual(profile.state, {loading: false, id: 0})
-    t.end()
+    if (i++ === 0) {
+      t.deepEqual(profile.state, {loading: true})
+    } else {
+      t.deepEqual(profile.state, {loading: false, id: 0, name: 'Foo'})
+      t.end()
+    }
   })
 
-  setProfile(0)
+  profile.emit(getProfile, 0)
 })
 
 test('wrong listener', t => {
@@ -148,10 +145,10 @@ test('wrong listener', t => {
   t.is(objectError.message, 'Expected listener to be a function')
 })
 
-test('middlewares', t => {
-  const middleware = data => next => (nextState, meta) => {
+test('middlewares', async t => {
+  const middleware = data => next => (extend, meta) => {
     return next({
-      ...nextState,
+      ...extend,
       last: meta
     })
   }
@@ -161,4 +158,6 @@ test('middlewares', t => {
   t.deepEqual(profile.state, {loading: false})
   profile.emit(setLoading, true)
   t.deepEqual(profile.state, {loading: true, last: 'setLoading'})
+  await profile.emit(getProfile, 0)
+  t.deepEqual(profile.state, {loading: false, id: 0, name: 'Foo', last: 'getProfile'})
 })
