@@ -58,6 +58,8 @@ async function init () {
 init()
 ```
 
+See also [example application](https://github.com/andrepolischuk/dact-example).
+
 ## API
 
 ### createData(initial[, ...middlewares])
