@@ -58,6 +58,8 @@ export default function createData (initial, ...middlewares) {
     }
 
     notify('*', state)
+
+    return extend
   }
 
   function emit (extend, ...args) {
