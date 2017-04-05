@@ -5,7 +5,8 @@
 Data manipulations should be simple. Simple flow based on functions extend state makes possible
 to create applications without writing mass of boilerplate code.
 
-It's my try to create minimal data container. Small size `~1kb`, extendable, simple api.
+It's my try to create minimal data container. Small size `~1kb`, simple api, extend functions,
+subscriptions to sub-state, extendable by middlewares.
 
 ## Install
 
