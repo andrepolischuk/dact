@@ -79,9 +79,9 @@ test('emit without transform', t => {
   const profile = createData(initial)
 
   profile.emit(initial)
-  t.deepEqual(profile.state, {loading: false})
+  t.is(profile.state, initial)
   profile.emit(data => data.state)
-  t.deepEqual(profile.state, {loading: false})
+  t.is(profile.state, initial)
 })
 
 test('wrong emit', t => {
