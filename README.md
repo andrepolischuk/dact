@@ -144,7 +144,7 @@ data.state // { users: ['unicorn'] }
 
 ### data.subscribe([stateKey, ]listener)
 
-Add listener invoke after state is changed.
+Add listener invoke after state is changed. Returns a function for unsubscribe listener.
 
 #### stateKey
 

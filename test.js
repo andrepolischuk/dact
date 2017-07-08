@@ -162,6 +162,21 @@ test('wrong listener', t => {
   t.is(objectError.message, 'Expected listener to be a function')
 })
 
+test('unsubscribe listener', t => {
+  const profile = createData(initial)
+  let state = initial
+
+  const unsubscribe = profile.subscribe(() => {
+    state = profile.state
+  })
+
+  profile.emit(setLoading, true)
+  t.deepEqual(state, {loading: true})
+  unsubscribe()
+  profile.emit(setLoading, false)
+  t.deepEqual(state, {loading: true})
+})
+
 test('middlewares', async t => {
   const middleware = data => next => (extend, meta) => {
     return next({

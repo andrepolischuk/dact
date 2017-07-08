@@ -28,11 +28,11 @@ export default function createData (initial, ...middlewares) {
   }
 
   function notify (stateKey, state) {
-    const nested = listeners[stateKey]
+    const keyListeners = listeners[stateKey]
 
-    if (nested) {
-      for (let i = 0; i < nested.length; i++) {
-        nested[i](state)
+    if (keyListeners) {
+      for (let i = 0; i < keyListeners.length; i++) {
+        keyListeners[i](state)
       }
     }
   }
@@ -96,6 +96,17 @@ export default function createData (initial, ...middlewares) {
     }
 
     listeners[stateKey].push(listener)
+
+    return function unsubscribe () {
+      const keyListeners = listeners[stateKey]
+      const index = keyListeners.indexOf(listener)
+
+      if (index < 0) {
+        return
+      }
+
+      keyListeners.splice(index, 1)
+    }
   }
 
   return data
