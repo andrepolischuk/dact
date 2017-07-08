@@ -99,52 +99,49 @@ test('wrong emit', t => {
   t.is(stringError.message, 'Expected emitted value to be an object or function')
 })
 
-test.cb('listener', t => {
-  t.plan(1)
-
+test('listener', t => {
   const profile = createData(initial)
+  let state
 
   profile.subscribe(() => {
-    t.deepEqual(profile.state, {loading: true})
-    t.end()
+    state = profile.state
   })
 
   profile.emit(setLoading, true)
+  t.deepEqual(state, {loading: true})
 })
 
-test.cb('async listener', t => {
-  t.plan(2)
-
+test('async listener', async t => {
   const profile = createData(initial)
-  let i = 0
+  let state
+  let calls = 0
 
   profile.subscribe(() => {
-    if (i++ === 0) {
-      t.deepEqual(profile.state, {loading: true})
-    } else {
-      t.deepEqual(profile.state, {loading: false, id: 0, name: 'Foo'})
-      t.end()
-    }
+    state = profile.state
+    calls++
   })
 
-  profile.emit(getProfile, 0)
+  await profile.emit(getProfile, 0)
+  t.is(calls, 2)
+  t.deepEqual(state, {loading: false, id: 0, name: 'Foo'})
 })
 
-test.cb('nested listener', t => {
-  t.plan(1)
-
+test('nested listener', t => {
   const profile = createData({
     app: null,
     user: null
   })
 
+  let state
+
   profile.subscribe('user', () => {
-    t.deepEqual(profile.state, {app: 'Foo', user: 'Bar'})
-    t.end()
+    state = profile.state
   })
 
   profile.emit({app: 'Foo'})
+  t.is(state, undefined)
   profile.emit({user: 'Bar'})
+  t.deepEqual(state, {app: 'Foo', user: 'Bar'})
 })
 
 test('wrong listener', t => {
@@ -164,7 +161,7 @@ test('wrong listener', t => {
 
 test('unsubscribe listener', t => {
   const profile = createData(initial)
-  let state = initial
+  let state
 
   const unsubscribe = profile.subscribe(() => {
     state = profile.state
